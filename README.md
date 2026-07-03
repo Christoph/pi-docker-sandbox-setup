@@ -16,12 +16,11 @@ Three reasons why this is relevant:
 # Setup
 
 ## 1. Build Docker Image
-`docker build -t sbx-shell-pi:v1`
-
+Choose you platform.
 `docker build --platform linux/arm64 -t sbx-shell-pi:v1 .`
 
 ## 2. Save tar
-`docker save sbx-shell-pi:v1 -o /Volumes/Extern/Projects/sbx-shell-pi/sbx-shell-pi.tar`
+`docker save sbx-shell-pi:v1 -o /OUTPUT/PATH/sbx-shell-pi.tar`
 
 ## 3. load it into the sandbox runtime's image store
 `sbx template load /Volumes/Extern/Projects/sbx-shell-pi/sbx-shell-pi.tar`
