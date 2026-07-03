@@ -59,8 +59,8 @@ IMPORTANT: This needs to be done for each sandbox on each start
 ### Example Plannotator
 `sbx ports <sandbox> --publish 9999:9999`
 
-### 
-Opens the pi sandbox in the current working dir with all subdirs accessible. 
+### Script for Startup
+Opens the pi sandbox and allows for dynamic port forwarding or add permanent forwardings.
 
 ``` bash
 # Usage: pisbx                      # sandbox for $PWD, no ports forwarded
