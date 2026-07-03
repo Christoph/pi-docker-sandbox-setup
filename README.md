@@ -35,8 +35,8 @@ Choose you platform.
 
 `sbx`
 
-## 5. Allow chatgpt and npm and pi.dev for documentation
-Adapt these based on your needs.
+## 5. Network policy
+If you use a strict network ploicy use these as baseline to allow extension install and open subscriptions.
 ```
 sbx policy allow network "auth.openai.com,api.openai.com,chatgpt.com,registry.npmjs.org,pi.dev"
 sbx policy allow network "raw.githubusercontent.com,api.github.com,github.com,objects.githubusercontent.com,codeload.github.com,release-assets.githubusercontent.com"
@@ -52,30 +52,40 @@ IMPORTANT: This needs to be done for each sandbox on each start
 Opens the pi sandbox in the current working dir with all subdirs accessible. 
 
 ``` bash
-# Usage: pisbx            # sandbox named after $PWD
-#        pisbx /path/repo # sandbox named after that dir
+# Usage: pisbx                      # sandbox for $PWD, no ports forwarded
+#        pisbx 8080:9999            # forward the given host:container ports
 pisbx() {
-  local template="sbx-shell-pi:v1"                 # your loaded template tag
-  local ws="${${1:-$PWD}:A}"                        # absolute workspace path
-  local base="${ws:t}"                              # directory name
-  local name="shell-${base//[^A-Za-z0-9._+-]/-}"    # sandbox name (sanitized)
+  local template="sbx-shell-pi:v3"                 # your loaded template tag
+  local ws="${PWD:A}"                              # absolute workspace path (always $PWD)
+  local base="${ws:t}"                             # directory name
+  local name="shell-${base//[^A-Za-z0-9._+-]/-}"   # sandbox name (sanitized)
 
-  # 1. stop every other sandbox so host ports 9999/1455 are free
-  sbx ls -q 2>/dev/null | grep -vx "$name" | while read -r other; do
-    [[ -n "$other" ]] && sbx stop "$other" >/dev/null 2>&1
+  # 1. validate all port args up front (expect host:container, digits only)
+  local p
+  for p in "$@"; do
+    if [[ "$p" != <->:<-> ]]; then
+      print -u2 "pisbx: invalid port mapping '$p' (expected host:container, e.g. 8080:9999)"
+      return 1
+    fi
   done
 
-  # 2. create this one if it doesn't exist yet (detached, so we can publish)
+  # 2. create this sandbox if it doesn't exist yet (detached, so we can publish)
   if ! sbx ls -q 2>/dev/null | grep -qx "$name"; then
     sbx create --name "$name" -t "$template" shell "$ws" || return 1
   fi
 
-  # 3. forward plannotator UI + OAuth callback (idempotent; persists across restarts)
-  sbx ports "$name" --publish 9999:9999 >/dev/null 2>&1
-  sbx ports "$name" --publish 1455:1455 >/dev/null 2>&1
+  # 3. forward exactly the ports passed (idempotent; persists across restarts)
+  for p in "$@"; do
+    sbx ports "$name" --publish "$p" >/dev/null 2>&1
+  done
 
   # 4. attach
-  print -P "%F{cyan}plannotator%f → http://localhost:9999   %F{242}(sandbox: ${name})%f"
+  if (( $# )); then
+    print -P "%F{cyan}pisbx%f → forwarding: $* %F{242}(sandbox: ${name})%f"
+  else
+    print -P "%F{cyan}pisbx%f → no ports forwarded %F{242}(sandbox: ${name})%f"
+  fi
   sbx run "$name"
 }
+
 ```
