@@ -23,7 +23,7 @@ Choose you platform.
 `docker save sbx-shell-pi:v1 -o /OUTPUT/PATH/sbx-shell-pi.tar`
 
 ## 3. load it into the sandbox runtime's image store
-`sbx template load /Volumes/Extern/Projects/sbx-shell-pi/sbx-shell-pi.tar`
+`sbx template load /OUTPUT/PATH/sbx-shell-pi.tar`
 
 ## 4. run a sandbox from that template (tag is preserved from the save)
 `sbx run -t sbx-shell-pi:v1 shell`
