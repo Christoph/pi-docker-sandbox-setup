@@ -17,6 +17,17 @@ Three reasons why this is relevant:
 
 ## 1. Build Docker Image
 Choose you platform.
+
+The Dockerfile includes 5 extensions, adapt as needed.
+```
+"npm:@juicesharp/rpiv-ask-user-question",' 
+"npm:@juicesharp/rpiv-todo",' 
+"npm:pi-mcp-adapter",'
+"npm:pi-lens",' 
+"npm:pi-powerline-footer"'
+```
+
+Then build the container
 `docker build --platform linux/arm64 -t sbx-shell-pi:v1 .`
 
 ## 2. Save tar
