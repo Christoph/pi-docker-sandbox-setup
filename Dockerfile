@@ -45,9 +45,6 @@ RUN mkdir -p "$HOME/.pi/agent" \
 '}' > "$HOME/.pi/agent/settings.json" \
     && node -e 'JSON.parse(require("fs").readFileSync(process.env.HOME + "/.pi/agent/settings.json", "utf8"))'
 
-RUN pi install git:github.com/Christoph/okf-memory \
-    && node -e 'JSON.parse(require("fs").readFileSync(process.env.HOME + "/.pi/agent/settings.json", "utf8"))'
-
 RUN pi install git:github.com/Christoph/iterator \
     && node -e 'JSON.parse(require("fs").readFileSync(process.env.HOME + "/.pi/agent/settings.json", "utf8"))'
 
