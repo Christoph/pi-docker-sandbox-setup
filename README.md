@@ -15,7 +15,7 @@ Three reasons why this is relevant:
 
 # Setup
 
-## 1. Build Docker Image
+## 1. Prepare Docker Image
 Choose you platform.
 
 The Dockerfile includes 5 extensions, adapt as needed.
@@ -28,25 +28,24 @@ The Dockerfile includes 5 extensions, adapt as needed.
 ```
 
 Then build the container
-`docker build --platform linux/arm64 -t sbx-shell-pi:v1 .`
 
-## 2. Save tar
-`docker save sbx-shell-pi:v1 -o /OUTPUT/PATH/sbx-shell-pi.tar`
+## 2. Build and load image to sbx
+```
+docker build --platform linux/arm64 -t sbx-shell-pi:v1 .
+docker save sbx-shell-pi:v1 -o /OUTPUT/PATH/sbx-shell-pi.tar
+sbx template load /OUTPUT/PATH/sbx-shell-pi.tar
+```
 
-## 3. load it into the sandbox runtime's image store
-`sbx template load /OUTPUT/PATH/sbx-shell-pi.tar`
-
-## 4. run a sandbox from that template (tag is preserved from the save)
+## 3. run a sandbox from that template (tag is preserved from the save) or use the script form the end of the readme
 `sbx run -t sbx-shell-pi:v1 shell`
 
 ### Check if the image is there
 `sbx template ls`
 
 ### Sbx command pane
-
 `sbx`
 
-## 5. Network policy
+## 4. Network policy
 If you use a strict network ploicy use these as baseline to allow extension install and open subscriptions.
 ```
 sbx policy allow network "auth.openai.com,api.openai.com,chatgpt.com,registry.npmjs.org,pi.dev"
@@ -86,6 +85,8 @@ pisbx() {
   fi
 
   # 3. forward exactly the ports passed (idempotent; persists across restarts)
+  # Permanent forward 8888 for the okf-memory dashboard
+  sbx ports "$name" --publish 8888:8888
   for p in "$@"; do
     sbx ports "$name" --publish "$p" >/dev/null 2>&1
   done
