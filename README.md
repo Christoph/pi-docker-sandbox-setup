@@ -53,19 +53,27 @@ sbx policy allow network "raw.githubusercontent.com,api.github.com,github.com,ob
 ```
 
 ## (optional) Forward ports
-IMPORTANT: This needs to be done for each sandbox on each start
+IMPORTANT: `sbx ports` only works on a **running** sandbox (`sbx ports --help`:
+"publish … ports for a running sandbox"), and publishes do not survive the
+sandbox being stopped. So the publish must happen on every start, *after* the
+sandbox is up — publishing right after `sbx create` (created ≠ running) or
+while a previously-used sandbox is stopped silently leaves you with zero
+forwards and `ERR_CONNECTION_REFUSED` on the host.
 
 ### Example Plannotator
 `sbx ports <sandbox> --publish 9999:9999`
 
 ### Script for Startup
-Opens the pi sandbox and allows for dynamic port forwarding or add permanent forwardings.
+Opens the pi sandbox and forwards the dashboard ports (8888 okf-memory,
+7777 iterator) plus any extra `host:container` args. It boots the sandbox
+first (`sbx exec` starts a stopped sandbox), publishes while it is running,
+and prints the live port table so you can see the forwards are actually there.
 
 ``` bash
-# Usage: pisbx                      # sandbox for $PWD, no ports forwarded
-#        pisbx 8080:9999            # forward the given host:container ports
+# Usage: pisbx                      # sandbox for $PWD, dashboards forwarded
+#        pisbx 8080:9999            # additionally forward host:container ports
 pisbx() {
-  local template="sbx-shell-pi:v3"                 # your loaded template tag
+  local template="sbx-shell-pi:v9"                 # your loaded template tag
   local ws="${PWD:A}"                              # absolute workspace path (always $PWD)
   local base="${ws:t}"                             # directory name
   local name="shell-${base//[^A-Za-z0-9._+-]/-}"   # sandbox name (sanitized)
@@ -79,26 +87,24 @@ pisbx() {
     fi
   done
 
-  # 2. create this sandbox if it doesn't exist yet (detached, so we can publish)
+  # 2. create this sandbox if it doesn't exist yet (created, not running)
   if ! sbx ls -q 2>/dev/null | grep -qx "$name"; then
     sbx create --name "$name" -t "$template" shell "$ws" || return 1
   fi
 
-  # 3. forward exactly the ports passed (idempotent; persists across restarts)
-  # Permanent forward 8888 for the okf-memory dashboard and the iterator dashboard
-  sbx ports "$name" --publish 8888:8888
-  sbx ports "$name" --publish 7777:7777
-  for p in "$@"; do
+  # 3. make sure it is RUNNING before publishing — sbx ports only affects a
+  #    running sandbox, and publishes are lost when the sandbox stops
+  sbx exec "$name" true || return 1
+
+  # 4. publish the dashboard ports + any extras, then show the live table
+  local -a wanted=(8888:8888 7777:7777 "$@")
+  for p in "${wanted[@]}"; do
     sbx ports "$name" --publish "$p" >/dev/null 2>&1
   done
+  sbx ports "$name"
 
-  # 4. attach
-  if (( $# )); then
-    print -P "%F{cyan}pisbx%f → forwarding: $* %F{242}(sandbox: ${name})%f"
-  else
-    print -P "%F{cyan}pisbx%f → no ports forwarded %F{242}(sandbox: ${name})%f"
-  fi
-  sbx run "$name"
+  # 5. attach (documented re-attach form)
+  sbx run --name "$name"
 }
 
 ```
