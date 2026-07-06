@@ -24,9 +24,7 @@ ENV ITERATOR_REMOTE=1
 
 RUN mkdir -p "$NPM_CONFIG_PREFIX" \
     && npm install -g --ignore-scripts @earendil-works/pi-coding-agent@latest \
-    && npm install -g impeccable@latest \
-    && command -v pi \
-    && command -v impeccable
+    && command -v pi 
 
 RUN npx --yes impeccable@latest install \
       --providers=pi \
