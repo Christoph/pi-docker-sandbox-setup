@@ -85,8 +85,9 @@ pisbx() {
   fi
 
   # 3. forward exactly the ports passed (idempotent; persists across restarts)
-  # Permanent forward 8888 for the okf-memory dashboard
+  # Permanent forward 8888 for the okf-memory dashboard and the iterator dashboard
   sbx ports "$name" --publish 8888:8888
+  sbx ports "$name" --publish 7777:7777
   for p in "$@"; do
     sbx ports "$name" --publish "$p" >/dev/null 2>&1
   done
