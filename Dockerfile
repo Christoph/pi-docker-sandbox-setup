@@ -26,11 +26,6 @@ RUN mkdir -p "$NPM_CONFIG_PREFIX" \
     && npm install -g --ignore-scripts @earendil-works/pi-coding-agent@latest \
     && command -v pi 
 
-RUN npx --yes impeccable@latest install \
-      --providers=pi \
-      --scope=global \
-      --no-hooks
-
 RUN mkdir -p "$HOME/.pi/agent" \
     && printf '%s\n' \
 '{' \
