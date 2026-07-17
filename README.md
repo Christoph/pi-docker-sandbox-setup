@@ -81,7 +81,7 @@ are actually there.
 # Usage: pisbx                      # sandbox for $PWD, dashboard forwarded
 #        pisbx 8080:9999            # additionally forward host:container ports
 pisbx() {
-  local template="sbx-shell-pi:v9"                 # your loaded template tag
+  local template="sbx-shell-pi:v1"                 # your loaded template tag
   local ws="${PWD:A}"                              # absolute workspace path (always $PWD)
   local base="${ws:t}"                             # directory name
   local name="shell-${base//[^A-Za-z0-9._+-]/-}"   # sandbox name (sanitized)
