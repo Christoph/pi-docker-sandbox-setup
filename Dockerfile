@@ -19,7 +19,6 @@ USER agent
 ENV NPM_CONFIG_PREFIX=/home/agent/.npm-global
 ENV PATH=/home/agent/.npm-global/bin:$PATH
 
-ENV OKF_REMOTE=1
 ENV ITERATOR_REMOTE=1
 
 RUN mkdir -p "$NPM_CONFIG_PREFIX" \
