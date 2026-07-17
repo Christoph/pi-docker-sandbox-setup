@@ -43,7 +43,11 @@ RUN mkdir -p "$HOME/.pi/agent" \
 RUN pi install git:github.com/Christoph/iterator \
     && node -e 'JSON.parse(require("fs").readFileSync(process.env.HOME + "/.pi/agent/settings.json", "utf8"))'
 
+# ~/.pisbx-env is written by the host-side pisbx script (per-sandbox settings
+# like ITERATOR_DISPLAY_PORT — the host port published onto 7777); source it
+# before handing the session to pi.
 RUN printf '%s\n' \
 'if [[ $- == *i* ]] && command -v pi >/dev/null 2>&1; then' \
+'  [ -f "$HOME/.pisbx-env" ] && . "$HOME/.pisbx-env"' \
 '  exec pi -a' \
 'fi' >> "$HOME/.bashrc"
