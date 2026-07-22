@@ -30,63 +30,24 @@ The Dockerfile includes 5 extensions, adapt as needed.
 Then build the container
 
 ## 2. Build and load image to sbx
+Make sure to use the correct platform and the policy is necessary so pip can update itself.
 ```
 docker build --platform linux/arm64 -t sbx-shell-pi:v1 .
 docker save sbx-shell-pi:v1 -o /OUTPUT/PATH/sbx-shell-pi.tar
 sbx template load /OUTPUT/PATH/sbx-shell-pi.tar
+sbx policy allow network "pi.dev"
 ```
 
-## 3. run a sandbox from that template (tag is preserved from the save) or use the script form the end of the readme
+## 3. run a sandbox from that template (tag is preserved from the save)
 `sbx run -t sbx-shell-pi:v1 shell`
 
-### Check if the image is there
+Check if the image is there
 `sbx template ls`
 
-### Sbx command pane
+Sbx command pane
 `sbx`
 
-## 4. Network policy
-If you use a strict network ploicy use these as baseline to allow extension install and open subscriptions.
-```
-sbx policy allow network "auth.openai.com,api.openai.com,chatgpt.com,registry.npmjs.org,pi.dev"
-sbx policy allow network "raw.githubusercontent.com,api.github.com,github.com,objects.githubusercontent.com,codeload.github.com,release-assets.githubusercontent.com"
-```
-
-## (optional) Forward ports
-IMPORTANT: `sbx ports` only works on a **running** sandbox (`sbx ports --help`:
-"publish … ports for a running sandbox"), and publishes do not survive the
-sandbox being stopped. So the publish must happen on every start, *after* the
-sandbox is up — publishing right after `sbx create` (created ≠ running) or
-while a previously-used sandbox is stopped silently leaves you with zero
-forwards and `ERR_CONNECTION_REFUSED` on the host.
-
-### Example Plannotator
-`sbx ports <sandbox> --publish 9999:9999`
-
-### Script for Startup
-Opens the pi sandbox and forwards the iterator dashboard (container port 7777)
-plus any extra `host:container` args. Each sandbox gets its **own host port**,
-so several `pisbx` sandboxes can be open at once, each with its own URL. The
-chosen host port is written into the sandbox as `ITERATOR_DISPLAY_PORT` (via
-`~/.pisbx-env`, sourced by the image's `.bashrc` before it execs pi), so
-iterator prints the URL that actually works on the host:
-`http://localhost:<host port>/`.
-
-The host port is picked by `sbx`, not by us: `--publish 7777` (no host port)
-allocates a free ephemeral one. Do **not** hand-pick a fixed host port here.
-`sbx` re-binds every published port when a sandbox starts, so a fixed forward
-like `8888:8888` makes the *second* sandbox fail to **start** at all:
-
-```
-ERROR: failed to start sandbox: start runtime: request failed: 409 Conflict:
-republish port request[0]: port not available: Bind for 127.0.0.1:8888 failed
-```
-
-Ephemeral forwards don't have this problem — they are re-allocated to a fresh
-free port on each start, so they can never collide. The trade-off is that a
-sandbox's dashboard URL changes between sessions, which is why the port is
-re-read after starting and re-written into `~/.pisbx-env` every time.
-
+### It is recommended to use the bash script as it forwards ports correctly every time you start
 ``` bash
 # Usage: pisbx                      # sandbox for $PWD, dashboard forwarded
 #        pisbx 8080:9999            # additionally forward host:container ports
@@ -154,5 +115,6 @@ pisbx() {
   # 8. attach (documented re-attach form)
   sbx run --name "$name"
 }
-
 ```
+
+
